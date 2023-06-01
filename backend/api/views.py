@@ -7,8 +7,10 @@ from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny,
 )
-from .serializers import UserSerializer, PasswordSerializer, FollowSerializer, FollowToSerializer
+from .serializers import UserSerializer, PasswordSerializer, FollowSerializer, FollowToSerializer, TagSerializer
 from users.models import Follow
+from food.models import Tag
+from . permissions import AdminOrReadOnly 
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
@@ -99,3 +101,13 @@ class FollowToView(views.APIView):
         )
         following.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Теги.
+    Изменение и создание тэгов разрешено только админам.
+    """
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = (AdminOrReadOnly,)

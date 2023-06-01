@@ -2,14 +2,14 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
 from users.models import Follow
-from food.models import Recipe
+from food.models import Recipe, Tag
 from djoser.serializers import UserSerializer
 
 User = get_user_model()
 
 
 class UserSerializer(UserSerializer):
-    """Пользователи"""
+    """Пользователи."""
 
     email = serializers.EmailField(
         validators=[UniqueValidator(queryset=User.objects.all())]
@@ -49,25 +49,32 @@ class UserSerializer(UserSerializer):
 
 
 class PasswordSerializer(serializers.Serializer):
-    """Смена пароля"""
+    """Смена пароля."""
 
     new_password = serializers.CharField(required=True)
     current_password = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed'
+        )
 
 
 class RecipePartSerializer(serializers.ModelSerializer):
-    """Рецепт для списка подписок"""
+    """Рецепт для списка подписок."""
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    """Подписки пользователя"""
+    """Подписки пользователя."""
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
@@ -119,7 +126,7 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class FollowToSerializer(serializers.ModelSerializer):
-    """Подписаться/удалить подписку"""
+    """Подписаться/удалить подписку."""
     class Meta:
         model = Follow
         fields = (
@@ -148,3 +155,22 @@ class FollowToSerializer(serializers.ModelSerializer):
             context=context
         )
         return serializer.data
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Вывод тегов."""
+
+    class Meta:
+        model = Tag
+        fields = (
+            'id',
+            'name',
+            'color',
+            'slug'
+        )
+        read_only_fields = (
+            'id',
+            'name',
+            'color',
+            'slug'
+        )
