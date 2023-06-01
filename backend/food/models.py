@@ -54,7 +54,7 @@ class Ingredient(models.Model):
         return f'{self.name}'
 
 
-class Receipt(models.Model):
+class Recipe(models.Model):
     """Рецепт"""
 
     name = models.CharField(
@@ -65,7 +65,7 @@ class Receipt(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор',
-        related_name='receipts',
+        related_name='recipes',
     )
     image = models.ImageField(
         verbose_name='Картинка',
@@ -112,8 +112,8 @@ class Receipt(models.Model):
 class IngredientAmount(models.Model):
     """Many-to-many рецепт-ингридиенты с количеством"""
 
-    receipt = models.ForeignKey(
-        Receipt,
+    recipe = models.ForeignKey(
+        Recipe,
         on_delete=models.CASCADE
     )
     ingredients = models.ForeignKey(
@@ -136,8 +136,8 @@ class IngredientAmount(models.Model):
 class Favorite(models.Model):
     """Избранные рецепты"""
 
-    receipt = models.ForeignKey(
-        Receipt,
+    recipe = models.ForeignKey(
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='favorites',
@@ -152,7 +152,7 @@ class Favorite(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'receipt'],
+                fields=['user', 'recipe'],
                 name='already in favorite')]
 
     def __str__(self) -> str:
@@ -162,8 +162,8 @@ class Favorite(models.Model):
 class Cart(models.Model):
     """Список покупок"""
 
-    receipt = models.ForeignKey(
-        Receipt,
+    recipe = models.ForeignKey(
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='carts',
@@ -178,7 +178,7 @@ class Cart(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'receipt'],
+                fields=['user', 'recipe'],
                 name='already in cart')
                 ]
 
