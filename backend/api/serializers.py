@@ -2,8 +2,10 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
 from users.models import Follow
-from food.models import Recipe, Tag, Ingredient
+from drf_extra_fields.fields import Base64ImageField
+from food.models import Recipe, Tag, Ingredient, IngredientAmount, Favorite, Cart
 from djoser.serializers import UserSerializer
+
 
 User = get_user_model()
 
@@ -191,3 +193,135 @@ class IngredientSerializer(serializers.ModelSerializer):
             'name',
             'measurement_unit'
         )
+
+
+class AddIngredientSerializer(serializers.ModelSerializer):
+    """Добавление ингридиента в рецепт."""
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = IngredientAmount
+        fields = ('id', 'amount')
+
+
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    """Ингридиенты с количеством."""
+
+    id = serializers.ReadOnlyField(
+        source='ingredient.id',
+    )
+    name = serializers.ReadOnlyField(
+        source='ingredient.name',
+    )
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit',
+    )
+
+    class Meta:
+        model = IngredientAmount
+        fields = ("id", "name", "measurement_unit", "amount")
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+    """Рецепты."""
+
+    author = UserSerializer()
+    tags = TagSerializer(
+        many=True,
+    )
+    ingredients = IngredientAmountSerializer(
+        read_only=True, many=True
+    )
+    image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='get_is_favorited'
+    )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart'
+    )
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'name',
+            'author',
+            'ingredients',
+            'image',
+            'text',
+            'cooking_time',
+            'is_favorited',
+            'is_in_shopping_cart'
+        )
+
+    def is_exists_in(self, obj, model):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
+            return False
+        return model.objects.filter(user=request.user, recipe=obj).exists()
+
+    def get_is_favorited(self, obj):
+        return self.is_exists_in(obj, Favorite)
+
+    def get_is_in_shopping_cart(self, obj):
+        return self.is_exists_in(obj, Cart)
+
+
+class RecipeAddSerializer(serializers.ModelSerializer):
+    """Добавление рецепта."""
+
+    image = Base64ImageField(max_length=None, use_url=True)
+    author = UserSerializer(read_only=True)
+    ingredients = AddIngredientSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
+
+    class Meta:
+        model = Recipe
+        fields = [
+            "id",
+            "tags",
+            "author",
+            "ingredients",
+            "name",
+            "image",
+            "text",
+            "cooking_time",
+        ]
+
+    def get_or_create_ingredients(self, ingredients, recipe):
+        for ingredient in ingredients:
+            amount1 = ingredient['amount']
+            ingredient1 = ingredient['id']
+            IngredientAmount.objects.get_or_create(
+                recipe=recipe,
+                ingredient=ingredient1,
+                amount=amount1
+            )
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop("ingredients")
+        tags = validated_data.pop("tags")
+        recipe = Recipe.objects.create(**validated_data)
+        self.get_or_create_ingredients(ingredients, recipe)
+        recipe.tags.set(tags)
+        recipe.save()
+        return recipe
+
+    def update(self, instance, validated_data):
+        ingredients = validated_data.pop("ingredients")
+        tags = validated_data.pop("tags")
+        IngredientAmount.objects.filter(recipe=instance).delete()
+        self.create_ingredients(ingredients, instance)
+        instance.name = validated_data.pop("name")
+        instance.text = validated_data.pop("text")
+        if validated_data.get("image") is not None:
+            instance.image = validated_data.pop("image")
+        instance.cooking_time = validated_data.pop("cooking_time")
+        instance.tags.set(tags)
+        instance.save()
+        return instance
