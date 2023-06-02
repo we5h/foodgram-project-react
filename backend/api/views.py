@@ -1,5 +1,5 @@
 from core.pagination import CustomPagination
-from rest_framework import status, viewsets, views
+from rest_framework import status, viewsets, views, filters
 from rest_framework.generics import ListAPIView
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import action
@@ -7,9 +7,9 @@ from rest_framework.permissions import (
     IsAuthenticated,
     AllowAny,
 )
-from .serializers import UserSerializer, PasswordSerializer, FollowSerializer, FollowToSerializer, TagSerializer
+from .serializers import UserSerializer, PasswordSerializer, FollowSerializer, FollowToSerializer, TagSerializer, IngredientSerializer
 from users.models import Follow
-from food.models import Tag
+from food.models import Tag, Ingredient
 from . permissions import AdminOrReadOnly 
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
@@ -111,3 +111,18 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AdminOrReadOnly,)
+
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Ингридиенты.
+    Поиск по вхождению в название.
+    """
+
+    class CustomSearchFilter(filters.SearchFilter):
+        search_param = "name"
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    filter_backends = [CustomSearchFilter]
+    search_fields = ('^name', )

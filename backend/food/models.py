@@ -28,7 +28,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
         ordering = ('name',)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f'{self.name} (цвет: {self.color})'
 
 
@@ -51,7 +51,7 @@ class Ingredient(models.Model):
         ordering = ('name',)
 
     def __str___(self):
-        return f'{self.name}'
+        return self.name
 
 
 class Recipe(models.Model):

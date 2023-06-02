@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
 from users.models import Follow
-from food.models import Recipe, Tag
+from food.models import Recipe, Tag, Ingredient
 from djoser.serializers import UserSerializer
 
 User = get_user_model()
@@ -173,4 +173,21 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
             'color',
             'slug'
+        )
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    """Ингридиенты."""
+
+    class Meta:
+        model = Ingredient
+        fields = (
+            'id',
+            'name',
+            'measurement_unit'
+        )
+        read_only_fields = (
+            'id',
+            'name',
+            'measurement_unit'
         )
