@@ -2,6 +2,7 @@ from core.pagination import CustomPagination
 from rest_framework import status, viewsets, views, filters
 from rest_framework.generics import ListAPIView
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.validators import ValidationError
 from rest_framework.decorators import action
@@ -16,7 +17,8 @@ from .serializers import (UserSerializer, PasswordSerializer,
                           RecipeAddSerializer)
 from users.models import Follow
 from core.filters import RecipeFilter
-from food.models import Tag, Ingredient, Recipe, Favorite, Cart
+from core.pdf_download import getpdf
+from food.models import Tag, Ingredient, Recipe, Favorite, Cart, IngredientAmount
 from . permissions import AdminOrReadOnly, IsOwnerOrReadOnly
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
@@ -137,6 +139,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """
+    Рецепты.
+    Фильтрация по параметрам, пагинация.
     """
 
     queryset = Recipe.objects.all()
@@ -176,11 +180,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             return self.delete_recipe(Cart, request, pk)
 
-    # @action(
-    #     detail=False,
-    #     permission_classes=(IsAuthenticated,)
-    # )
-    # def download_shopping_cart(self, request):
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
+    def download_shopping_cart(self, request):
+        ingredients = IngredientAmount.objects.filter(
+            recipe__carts__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).order_by(
+            'ingredient__name'
+        ).annotate(ingredient_amount=Sum('amount'))
+        return getpdf(ingredients)
 
     def add_recipe(self, model, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
