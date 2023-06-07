@@ -1,28 +1,27 @@
-from core.pagination import CustomPagination
-from rest_framework import status, viewsets, views, filters
-from rest_framework.generics import ListAPIView
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.validators import ValidationError
-from rest_framework.decorators import action
-from rest_framework.permissions import (
-    IsAuthenticated,
-    AllowAny,
-)
-from .serializers import (UserSerializer, PasswordSerializer,
-                          FollowSerializer, FollowToSerializer,
-                          TagSerializer, IngredientSerializer,
-                          RecipeSerializer, RecipePartSerializer,
-                          RecipeAddSerializer)
-from users.models import Follow
-from core.filters import RecipeFilter
-from core.pdf_download import getpdf
-from food.models import Tag, Ingredient, Recipe, Favorite, Cart, IngredientAmount
-from . permissions import AdminOrReadOnly, IsOwnerOrReadOnly
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, views, viewsets
+from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.validators import ValidationError
+
+from core.filters import RecipeFilter
+from core.pagination import CustomPagination
+from core.pdf_download import getpdf
+from food.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
+                         Tag)
+from users.models import Follow
+
+from .permissions import AdminOrReadOnly, IsOwnerOrReadOnly
+from .serializers import (FollowSerializer, FollowToSerializer,
+                          IngredientSerializer, PasswordSerializer,
+                          RecipeAddSerializer, RecipePartSerializer,
+                          RecipeSerializer, TagSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -75,7 +74,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
 
 
-class FollowViewSet(ListAPIView):
+class FollowView(ListAPIView):
     """Подписки пользователя"""
     serializer_class = FollowSerializer
     pagination_class = CustomPagination
@@ -141,6 +140,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     Рецепты.
     Фильтрация по параметрам, пагинация.
+    Добавление/удаление из избранного/корзины.
+    Скачивание PDF списка корзины.
     """
 
     queryset = Recipe.objects.all()

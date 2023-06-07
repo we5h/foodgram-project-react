@@ -13,7 +13,7 @@ class AdminOrReadOnly(BasePermission):
             or request.user.is_authenticated
             and request.user.is_staff
         )
-    
+
 
 class IsOwnerOrReadOnly(BasePermission):
     """

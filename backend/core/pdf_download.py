@@ -1,8 +1,8 @@
-from reportlab.pdfgen import canvas
+from django.conf import settings
+from django.http import HttpResponse
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from django.http import HttpResponse
-from django.conf import settings
+from reportlab.pdfgen import canvas
 
 
 def getpdf(data):
@@ -27,7 +27,7 @@ def getpdf(data):
         p.drawString(100, str_pos, f'{name} ({unit}) - {amount}')
         str_pos -= 50
     p.setFont("DejaVuSerif-Italic", 10)
-    p.drawString(50, str_pos, 'FoodGram App')
+    p.drawString(50, str_pos, 'FoodGram App ʕ ᵔᴥᵔ ʔ')
     p.showPage()
     p.save()
     return response

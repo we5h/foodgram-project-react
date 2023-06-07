@@ -1,5 +1,5 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 User = get_user_model()
@@ -50,8 +50,8 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингридиенты'
         ordering = ('name',)
 
-    def __str___(self):
-        return self.name
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Recipe(models.Model):
@@ -132,7 +132,7 @@ class IngredientAmount(models.Model):
         verbose_name_plural = 'Ингридиенты с количеством'
 
     def __str__(self):
-        return f'{self.amount} {self.ingredients}'
+        return f'{self.amount} {self.ingredient.name}'
 
 
 class Favorite(models.Model):
@@ -152,6 +152,8 @@ class Favorite(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Рецепт в списке избранного'
+        verbose_name_plural = 'Рецепты в списке избранного'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -178,11 +180,12 @@ class Cart(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Рецепт в списке покупок'
+        verbose_name_plural = 'Рецепты в списке покупок'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='already in cart')
-                ]
+                name='already in cart')]
 
     def __str__(self):
         return f'{self.user} -> {self.recipe}'
