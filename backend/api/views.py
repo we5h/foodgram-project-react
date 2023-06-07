@@ -21,7 +21,8 @@ from .permissions import AdminOrReadOnly, IsOwnerOrReadOnly
 from .serializers import (FollowSerializer, FollowToSerializer,
                           IngredientSerializer, PasswordSerializer,
                           RecipeAddSerializer, RecipePartSerializer,
-                          RecipeSerializer, TagSerializer, UserSerializer)
+                          RecipeSerializer, TagSerializer,
+                          CustomUserSerializer, CustomUserPostSerializer)
 
 User = get_user_model()
 
@@ -34,9 +35,13 @@ class UserViewSet(viewsets.ModelViewSet):
     """
 
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = (AllowAny,)
     pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return CustomUserSerializer
+        return CustomUserPostSerializer
 
     def perform_create(self, serializer):
         if "password" in self.request.data:
@@ -57,7 +62,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def me(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=request.user.id)
-        serializer = UserSerializer(user)
+        serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
     @action(methods=["post"], detail=False)

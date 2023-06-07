@@ -6,14 +6,15 @@ class User(AbstractUser):
     """Кастомная модель пользователя"""
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', 'password']
 
     email = models.EmailField(
+        'email',
         unique=True,
-        max_length=254,
-        verbose_name='email',
-        help_text='Введите адрес электронной почты'
+        max_length=254
     )
+    first_name = models.CharField(('first name'), max_length=150, blank=False)
+    last_name = models.CharField(('last name'), max_length=150, blank=False)
 
     class Meta:
         verbose_name = 'Пользователь'

@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
@@ -11,16 +11,8 @@ from users.models import Follow
 User = get_user_model()
 
 
-class UserSerializer(UserSerializer):
-    """Пользователи."""
-
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-    username = serializers.RegexField(
-        regex=r"^[\w.@+-]+\Z", max_length=150,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
+class CustomUserSerializer(UserSerializer):
+    """Пользователи [GET]"""
 
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed'
@@ -37,11 +29,6 @@ class UserSerializer(UserSerializer):
             'is_subscribed'
         )
 
-    def validate_email(self, value):
-        if len(value) < 254:
-            return value
-        raise serializers.ValidationError("Email less then 254 symbols.")
-
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
@@ -49,6 +36,15 @@ class UserSerializer(UserSerializer):
         return Follow.objects.filter(
             user=request.user, author=obj
         ).exists()
+
+
+class CustomUserPostSerializer(UserCreateSerializer):
+    """Пользователи [POST]"""
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username',
+                  'first_name', 'last_name',
+                  'password')
 
 
 class PasswordSerializer(serializers.Serializer):
@@ -229,7 +225,7 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     """Рецепты."""
 
-    author = UserSerializer()
+    author = CustomUserSerializer()
     tags = TagSerializer(
         many=True,
     )
@@ -277,7 +273,7 @@ class RecipeAddSerializer(serializers.ModelSerializer):
     """Добавление рецепта."""
 
     image = Base64ImageField(max_length=None, use_url=True)
-    author = UserSerializer(read_only=True)
+    author = CustomUserSerializer(read_only=True)
     ingredients = AddIngredientSerializer(many=True,
                                           source='ingredient_in_recipe')
     tags = serializers.PrimaryKeyRelatedField(
