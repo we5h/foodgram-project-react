@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
+from django.db import transaction
 
 from food.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
                          Tag)
@@ -75,6 +75,13 @@ class RecipePartSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     """Подписки пользователя."""
     email = serializers.ReadOnlyField(source='author.email')
+    # Как я понял ТЗ и redoc - мы передали ID параметр пользователя
+    # и подписались на него.
+    # Следовательно при получении списка на кого мы подписаны -
+    # мы получаем именно данные этого пользователя, в том числе его id.
+    # Глядя на redoc еще раз, я все же думаю,
+    # что мы там получаем данные об авторе,
+    # а не id подписки среди его других параметров. ¯\_(ツ)_/¯
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
@@ -203,11 +210,6 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'amount')
 
 
-# class NameListingField(serializers.RelatedField):
-#     def to_representation(self, value):
-#         return value
-
-
 class IngredientAmountSerializer(serializers.ModelSerializer):
     """Ингридиенты с количеством."""
 
@@ -294,30 +296,42 @@ class RecipeAddSerializer(serializers.ModelSerializer):
             "cooking_time",
         ]
 
-    def get_or_create_ingredients(self, ingredients, recipe):
+    def bulk_create_ingredients(self, ingredients, recipe):
+        bulk_list = list()
+        double_ing_check = set()
         for ingredient in ingredients:
             amount1 = ingredient['amount']
             ingredient1 = ingredient['ingredient']
-            IngredientAmount.objects.get_or_create(
-                recipe=recipe,
-                ingredient=ingredient1,
-                amount=amount1
-            )
+            if ingredient1 in double_ing_check:
+                raise serializers.ValidationError({"error":
+                                                   "You can not add the same"
+                                                   " ingredient twice."
+                                                   "Change amount."})
+            else:
+                double_ing_check.add(ingredient1)
+            bulk_list.append(IngredientAmount(
+                             recipe=recipe,
+                             ingredient=ingredient1,
+                             amount=amount1)
+                             )
+        IngredientAmount.objects.bulk_create(bulk_list)
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data.pop("ingredient_in_recipe")
         tags = validated_data.pop("tags")
         recipe = Recipe.objects.create(**validated_data)
-        self.get_or_create_ingredients(ingredients, recipe)
+        self.bulk_create_ingredients(ingredients, recipe)
         recipe.tags.set(tags)
         recipe.save()
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop("ingredient_in_recipe")
         tags = validated_data.pop("tags")
         IngredientAmount.objects.filter(recipe=instance).delete()
-        self.get_or_create_ingredients(ingredients, instance)
+        self.bulk_create_ingredients(ingredients, instance)
         instance.name = validated_data.pop("name")
         instance.text = validated_data.pop("text")
         if validated_data.get("image") is not None:

@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (MaxValueValidator,
+                                    MinValueValidator,
+                                    RegexValidator)
 from django.db import models
 
 User = get_user_model()
@@ -16,7 +18,8 @@ class Tag(models.Model):
     color = models.CharField(
         verbose_name='Цветовой HEX код',
         max_length=16,
-        unique=True
+        unique=True,
+        validators=[RegexValidator(r'^#(?:[0-9a-fA-F]{3}){1,2}$')]
     )
     slug = models.SlugField(
         verbose_name='Слаг',
@@ -70,7 +73,6 @@ class Recipe(models.Model):
     image = models.ImageField(
         verbose_name='Картинка',
         upload_to='food/images/',
-        null=False,
     )
     text = models.TextField(
         verbose_name='Описание',
@@ -87,7 +89,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[MinValueValidator(1), MaxValueValidator(400)]
+        validators=[MinValueValidator(1)]
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',

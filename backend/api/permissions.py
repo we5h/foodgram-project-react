@@ -1,4 +1,6 @@
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.permissions import (SAFE_METHODS,
+                                        BasePermission,
+                                        IsAuthenticatedOrReadOnly)
 
 
 class AdminOrReadOnly(BasePermission):
@@ -15,18 +17,12 @@ class AdminOrReadOnly(BasePermission):
         )
 
 
-class IsOwnerOrReadOnly(BasePermission):
+class IsOwnerOrReadOnly(IsAuthenticatedOrReadOnly):
     """
     Разрешение на создание и изменение только для автора
     или админа.
     Остальным только чтение объекта.
     """
-
-    def has_permission(self, request, view):
-        return (
-            request.method in SAFE_METHODS
-            or request.user.is_authenticated
-        )
 
     def has_object_permission(self, request, view, obj):
         return (

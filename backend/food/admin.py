@@ -7,6 +7,10 @@ class IngredientsInLine(admin.TabularInline):
     model = Recipe.ingredients.through
 
 
+class TagsInLine(admin.TabularInline):
+    model = Recipe.tags.through
+
+
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     fields = (
@@ -31,7 +35,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('name',
                    'author',
                    'tags')
-    inlines = (IngredientsInLine,)
+    inlines = (IngredientsInLine, TagsInLine)
 
     def count_favorite(self, instance):
         return instance.favorites.count()

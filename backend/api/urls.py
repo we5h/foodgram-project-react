@@ -10,7 +10,7 @@ router = SimpleRouter()
 
 router.register('users', UserViewSet, basename='users')
 router.register('tags', TagViewSet, basename='tags')
-router.register('ingredients', IngredientViewSet, basename='ingridients')
+router.register('ingredients', IngredientViewSet, basename='ingredients')
 router.register('recipes', RecipeViewSet, basename='recipes')
 
 
