@@ -13,9 +13,7 @@ class User(AbstractUser):
         unique=True,
         max_length=254
     )
-    # Эти поля были переопределены из-за требования в доке.
-    # Поля должны быть 'required'.
-    # Без них проходит POST запрос на создание пользователя, что неверно.
+
     first_name = models.CharField(('first name'), max_length=150, blank=False)
     last_name = models.CharField(('last name'), max_length=150, blank=False)
 

@@ -75,13 +75,6 @@ class RecipePartSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     """Подписки пользователя."""
     email = serializers.ReadOnlyField(source='author.email')
-    # Как я понял ТЗ и redoc - мы передали ID параметр пользователя
-    # и подписались на него.
-    # Следовательно при получении списка на кого мы подписаны -
-    # мы получаем именно данные этого пользователя, в том числе его id.
-    # Глядя на redoc еще раз, я все же думаю,
-    # что мы там получаем данные об авторе,
-    # а не id подписки среди его других параметров. ¯\_(ツ)_/¯
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
