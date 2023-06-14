@@ -36,4 +36,4 @@ services:
       - static:/var/html/backend_static/
       - media:/var/html/backend_media/
     ports:
-      - 80:80
+      - 80:9001
