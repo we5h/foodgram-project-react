@@ -17,8 +17,8 @@ services:
     container_name: backend
     build: ../backend/
     volumes:
-      - static:/app/backend_static/
-      - media:/app/backend_media/
+      - static:/backend_static/
+      - media:/backend_media/
     depends_on:
       - db
     env_file: ../.env

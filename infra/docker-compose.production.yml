@@ -17,8 +17,8 @@ services:
     image: we5h/foodgram_backend
     env_file: .env
     volumes:
-      - static:/app/backend_static/
-      - media:/app/backend_media/
+      - static:/backend_static/
+      - media:/backend_media/
   frontend:
     container_name: frontend_prod
     image: we5h/foodgram_frontend
