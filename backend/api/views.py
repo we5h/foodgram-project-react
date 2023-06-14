@@ -2,7 +2,6 @@ from core.filters import RecipeFilter
 from core.pagination import CustomPagination
 from core.pdf_download import getpdf
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -41,20 +40,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return CustomUserSerializer
         return CustomUserPostSerializer
-
-    def perform_create(self, serializer):
-        if "password" in self.request.data:
-            password = make_password(self.request.data["password"])
-            serializer.save(password=password)
-        else:
-            serializer.save()
-
-    def perform_update(self, serializer):
-        if "password" in self.request.data:
-            password = make_password(self.request.data["password"])
-            serializer.save(password=password)
-        else:
-            serializer.save()
 
     @action(
         methods=["get"], detail=False, permission_classes=[IsAuthenticated]
