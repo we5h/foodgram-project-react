@@ -1,11 +1,10 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer, UserCreateSerializer
-from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers
 from django.db import transaction
-
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from food.models import (Cart, Favorite, Ingredient, IngredientAmount, Recipe,
                          Tag)
+from rest_framework import serializers
 from users.models import Follow
 
 User = get_user_model()
