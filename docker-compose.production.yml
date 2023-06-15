@@ -19,8 +19,6 @@ services:
     volumes:
       - static:/backend_static
       - media:/backend_media
-    depends_on:
-      - db
     env_file: .env
 
   frontend:
@@ -29,8 +27,6 @@ services:
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static/
-    depends_on:
-      - db
 
   gateway:
     container_name: nginx_prod
