@@ -13,9 +13,6 @@
 [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
 [![Yandex.Cloud](https://img.shields.io/badge/-Yandex.Cloud-464646?style=flat-square&logo=Yandex.Cloud)](https://cloud.yandex.ru/)
 
-ip,dns: https://foodgramyawesh.ddns.net/ , 62.84.121.190;
-admin: email - admin@admin.ru; pass - admin;
-
 ### Когда проголодаетесь не знаете, что приготовить?
 ### А в моменты прибывания кухонным шефом не хочется забыть рецепт своего кулинарного шедевра? 
 ### Foodgram - продуктовый помощник с базой кулинарных рецептов, который станет вашим верным инструментом!
