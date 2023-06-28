@@ -28,7 +28,7 @@
 
 - Клонировать репозиторий:
 ```
-https://github.com/mikhailsoldatkin/foodgram-project-react.git
+https://github.com/we5h/foodgram-project-react.git
 ```
 
 - Установить на сервере Docker, Docker Compose:
