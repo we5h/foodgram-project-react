@@ -101,7 +101,7 @@ sudo docker compose stop         # без удаления
 
 - Клонировать репозиторий:
 ```
-https://github.com/mikhailsoldatkin/foodgram-project-react.git
+https://github.com/we5h/foodgram-project-react.git
 ```
 
 - В корне проекта создать .env и заполнить своими данными:
